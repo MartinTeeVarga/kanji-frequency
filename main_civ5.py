@@ -3,16 +3,25 @@ __version__ = "0.0.1"
 
 import bz2
 import sys
+import os
 import kanjicounter
+import collections
 
 
-TEXT = "{http://www.mediawiki.org/xml/export-0.10/}text"
+TEXT = "Text"
 
 def main():
-    source = bz2.BZ2File(sys.argv[1], 'r')
+
+    rootdir = sys.argv[1]
 
     kc = kanjicounter.KanjiCounter()
-    c = kc.parse(source, TEXT)
+    c = collections.Counter()
+
+    for subdir, dirs, files in os.walk(rootdir):
+        for file in files:
+            f = os.path.join(subdir, file)
+            print("Parsing: " + f)
+            c += kc.parse(f, TEXT)
 
     targetJson = open(sys.argv[2] + ".json", 'w', encoding="utf-8")
     targetJson.write(str(c).replace("'", '"').replace("Counter(", "").replace(")", ""))
